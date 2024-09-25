@@ -8,4 +8,5 @@
 支持mod、取倒数、取平方根操作。
 
 ![image](https://github.com/user-attachments/assets/f2bcfd7a-af75-4d8a-8d4a-2c273878692c)
+
 可以计算贷款利息与总额。
