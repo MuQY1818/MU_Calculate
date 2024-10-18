@@ -1,4 +1,5 @@
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -15,52 +16,66 @@ public class LoanCalculator extends JFrame {
 
     public LoanCalculator() {
         setTitle("贷款计算器");
-        setLayout(new GridBagLayout());
+        setLayout(new BorderLayout());
+        
+        // 设置现代look and feel
+        try {
+            UIManager.setLookAndFeel("javax.swing.plaf.nimbus.NimbusLookAndFeel");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        // 主面板
+        JPanel mainPanel = new JPanel(new GridBagLayout());
+        mainPanel.setBackground(new Color(240, 240, 240));
+        mainPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
+
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.insets = new Insets(10, 10, 10, 10);  // 增加组件间距
+        gbc.insets = new Insets(5, 5, 5, 5);
 
-        // 设置更大的字体
-        Font largerFont = new Font("SimSun", Font.PLAIN, 30);
+        // 设置字体
+        Font labelFont = new Font("Microsoft YaHei", Font.PLAIN, 16);
+        Font inputFont = new Font("Microsoft YaHei", Font.PLAIN, 14);
 
         // 贷款金额
         gbc.gridx = 0;
         gbc.gridy = 0;
         JLabel loanAmountLabel = new JLabel("贷款金额:");
-        loanAmountLabel.setFont(largerFont);
-        add(loanAmountLabel, gbc);
+        loanAmountLabel.setFont(labelFont);
+        mainPanel.add(loanAmountLabel, gbc);
 
         gbc.gridx = 1;
         gbc.gridy = 0;
         loanAmountField = new JTextField(15);
-        loanAmountField.setFont(largerFont);
-        add(loanAmountField, gbc);
+        loanAmountField.setFont(inputFont);
+        mainPanel.add(loanAmountField, gbc);
 
         // 年利率
         gbc.gridx = 0;
         gbc.gridy = 1;
         JLabel annualRateLabel = new JLabel("年利率 (%):");
-        annualRateLabel.setFont(largerFont);
-        add(annualRateLabel, gbc);
+        annualRateLabel.setFont(labelFont);
+        mainPanel.add(annualRateLabel, gbc);
 
         gbc.gridx = 1;
         gbc.gridy = 1;
         annualRateField = new JTextField(15);
-        annualRateField.setFont(largerFont);
-        add(annualRateField, gbc);
+        annualRateField.setFont(inputFont);
+        mainPanel.add(annualRateField, gbc);
 
         // 贷款年限
         gbc.gridx = 0;
         gbc.gridy = 2;
         JLabel loanYearsLabel = new JLabel("贷款年限:");
-        loanYearsLabel.setFont(largerFont);
-        add(loanYearsLabel, gbc);
+        loanYearsLabel.setFont(labelFont);
+        mainPanel.add(loanYearsLabel, gbc);
 
         gbc.gridx = 1;
         gbc.gridy = 2;
         loanYearsField = new JTextField(15);
-        loanYearsField.setFont(largerFont);
-        add(loanYearsField, gbc);
+        loanYearsField.setFont(inputFont);
+        mainPanel.add(loanYearsField, gbc);
 
         // 还款方式选择
         gbc.gridx = 0;
@@ -69,44 +84,59 @@ public class LoanCalculator extends JFrame {
         ButtonGroup group = new ButtonGroup();
         equalPrincipalInterestButton = new JRadioButton("等额本息");
         equalPrincipalButton = new JRadioButton("等额本金");
-        equalPrincipalInterestButton.setFont(largerFont);
-        equalPrincipalButton.setFont(largerFont);
+        equalPrincipalInterestButton.setFont(labelFont);
+        equalPrincipalButton.setFont(labelFont);
         group.add(equalPrincipalInterestButton);
         group.add(equalPrincipalButton);
         JPanel radioPanel = new JPanel();
         radioPanel.add(equalPrincipalInterestButton);
         radioPanel.add(equalPrincipalButton);
-        add(radioPanel, gbc);
+        mainPanel.add(radioPanel, gbc);
 
         // 计算按钮
         gbc.gridx = 0;
         gbc.gridy = 4;
         gbc.gridwidth = 2;
         JButton calculateButton = new JButton("计算");
-        calculateButton.setFont(largerFont);
+        calculateButton.setFont(new Font("Microsoft YaHei", Font.BOLD, 16));
+        calculateButton.setBackground(new Color(70, 130, 180));
+        calculateButton.setForeground(Color.WHITE);
+        calculateButton.setFocusPainted(false);
         calculateButton.addActionListener(new CalculateButtonListener());
-        add(calculateButton, gbc);
+        mainPanel.add(calculateButton, gbc);
 
         // 结果标签
         gbc.gridx = 0;
         gbc.gridy = 5;
         gbc.gridwidth = 2;
         monthlyPaymentLabel = new JLabel("月均还款: ");
-        monthlyPaymentLabel.setFont(largerFont);
-        add(monthlyPaymentLabel, gbc);
+        monthlyPaymentLabel.setFont(labelFont);
+        mainPanel.add(monthlyPaymentLabel, gbc);
 
         gbc.gridy = 6;
         totalInterestLabel = new JLabel("利息总额: ");
-        totalInterestLabel.setFont(largerFont);
-        add(totalInterestLabel, gbc);
+        totalInterestLabel.setFont(labelFont);
+        mainPanel.add(totalInterestLabel, gbc);
 
         gbc.gridy = 7;
         totalPaymentLabel = new JLabel("还款总额: ");
-        totalPaymentLabel.setFont(largerFont);
-        add(totalPaymentLabel, gbc);
+        totalPaymentLabel.setFont(labelFont);
+        mainPanel.add(totalPaymentLabel, gbc);
 
-        setSize(500, 600);
+        // 将主面板添加到框架
+        add(mainPanel, BorderLayout.CENTER);
+
+        // 添加页脚
+        JPanel footerPanel = new JPanel();
+        footerPanel.setBackground(new Color(70, 130, 180));
+        JLabel footerLabel = new JLabel("© 2024 贷款计算器 by 卜炜珏");
+        footerLabel.setForeground(Color.WHITE);
+        footerPanel.add(footerLabel);
+        add(footerPanel, BorderLayout.SOUTH);
+
+        setSize(550, 650);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        setLocationRelativeTo(null);  // 居中显示
     }
 
     private class CalculateButtonListener implements ActionListener {

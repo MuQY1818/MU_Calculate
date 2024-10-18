@@ -34,6 +34,7 @@ public class Calculator extends JFrame {
         display.setBackground(new Color(250, 250, 250));
         display.setHorizontalAlignment(JTextField.RIGHT); // 设置文本右对齐
         display.setText(placeholder); // 初始时显示提示词
+        // 设置边框样式
         display.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(new Color(200, 200, 200), 1),
                 BorderFactory.createEmptyBorder(10, 15, 10, 15)
