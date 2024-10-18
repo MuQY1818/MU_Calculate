@@ -31,7 +31,7 @@ public class Calculator extends JFrame {
         display = new JTextField();
         display.setEditable(true); // 允许用户直接在文本框中输入
         display.setFont(new Font("Segoe UI", Font.PLAIN, 28));
-        display.setForeground(new Color(80, 80, 80));
+        display.setForeground(Color.GRAY);  // 初始颜色设为灰色
         display.setBackground(new Color(250, 250, 250));
         display.setHorizontalAlignment(JTextField.RIGHT); // 设置文本右对齐
         display.setText(placeholder); // 初始时显示提示词
@@ -40,11 +40,10 @@ public class Calculator extends JFrame {
                 BorderFactory.createLineBorder(new Color(200, 200, 200), 1),
                 BorderFactory.createEmptyBorder(10, 15, 10, 15)
         ));
-
         // 焦点监听器实现提示文字功能
         display.addFocusListener(new java.awt.event.FocusAdapter() {
             @Override
-            // 获得焦点时，清楚提示文字
+            // 获得焦点时，清除提示文字
             public void focusGained(java.awt.event.FocusEvent e) {
                 if (display.getText().equals(placeholder)) {
                     display.setText("");
@@ -73,8 +72,8 @@ public class Calculator extends JFrame {
 
         // 按钮
         String[] buttons = {
-                "7", "8", "9", "/",
-                "4", "5", "6", "*",
+                "7", "8", "9", "÷",
+                "4", "5", "6", "×",
                 "1", "2", "3", "-",
                 "(", "0", ")", "+",
                 "√", "%", "1/x", "Loan"
@@ -141,6 +140,27 @@ public class Calculator extends JFrame {
         add(panel, BorderLayout.CENTER);
         setSize(350, 450);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+        // 使用 SwingUtilities.invokeLater 来设置初始状态
+        SwingUtilities.invokeLater(this::setInitialState);
+    }
+
+    private void setInitialState() {
+        display.setText(placeholder);
+        display.setForeground(Color.GRAY);
+        display.setFocusable(false);  // 禁用文本框的可聚焦性，避免初始状态时自动获得焦点
+
+        // 将焦点设置到第一个按钮上
+        Component[] components = getContentPane().getComponents();
+        for (Component component : components) {
+            if (component instanceof JPanel) {
+                JPanel panel = (JPanel) component;
+                if (panel.getComponentCount() > 0) {
+                    panel.getComponent(0).requestFocusInWindow();
+                    break;
+                }
+            }
+        }
     }
 
     private JButton createStyledButton(String text) {
@@ -151,7 +171,7 @@ public class Calculator extends JFrame {
         button.addActionListener(new ButtonClickListener());
         
         // 根据按钮类型设置初始背景色和前景色
-        if (text.matches("[+\\-*/]")) {
+        if (text.matches("[+\\-×÷]")) {
             button.setBackground(OPERATOR_BACKGROUND);
             button.setFont(new Font("Segoe UI", Font.BOLD, 18));
             button.setForeground(Color.WHITE);
@@ -198,9 +218,12 @@ public class Calculator extends JFrame {
     private class ButtonClickListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
+            if (!display.isFocusable()) {
+                display.setFocusable(true);
+            }
+
             String command = e.getActionCommand();
 
-            // 清除提示文字
             if (display.getText().equals(placeholder)) {
                 display.setText("");
                 display.setForeground(Color.BLACK);
@@ -209,14 +232,17 @@ public class Calculator extends JFrame {
             // 退格按钮
             if (command.equals("Backspace")) {
                 String currentText = display.getText();
-                if (!currentText.equals(placeholder) && currentText.length() > 0) {
+                if (!currentText.isEmpty()) {
                     display.setText(currentText.substring(0, currentText.length() - 1));
+                }
+                if (display.getText().isEmpty()) {
+                    display.setText(placeholder);
+                    display.setForeground(Color.GRAY);
                 }
             }
 
             // 清空按钮
             else if (command.equals("C")) {
-                display.setText("");
                 display.setText(placeholder);
                 display.setForeground(Color.GRAY);
             }
@@ -266,6 +292,10 @@ public class Calculator extends JFrame {
 
             // 处理数字和运算符，直接加到算式中即可
             else {
+                if (display.getText().equals(placeholder)) {
+                    display.setText("");
+                    display.setForeground(Color.BLACK);
+                }
                 display.setText(display.getText() + command);
             }
         }
@@ -275,6 +305,9 @@ public class Calculator extends JFrame {
     // 计算表达式
     private String evaluateExpression(String expression) {
         try {
+            // 将显示用的符号转换为计算用的符号
+            expression = expression.replace("×", "*").replace("÷", "/");
+
             // 将表达式转换为后缀表达式
             String postfix = infixToPostfix(expression);
 
@@ -407,7 +440,9 @@ public class Calculator extends JFrame {
     }
 
     public static void main(String[] args) {
-        Calculator calculator = new Calculator();
-        calculator.setVisible(true);
+        SwingUtilities.invokeLater(() -> {
+            Calculator calculator = new Calculator();
+            calculator.setVisible(true);
+        });
     }
 }
