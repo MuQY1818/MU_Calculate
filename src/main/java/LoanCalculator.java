@@ -134,7 +134,7 @@ public class LoanCalculator extends JFrame {
         footerPanel.add(footerLabel);
         add(footerPanel, BorderLayout.SOUTH);
 
-        setSize(550, 650);
+        setSize(450, 550);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLocationRelativeTo(null);  // 居中显示
     }

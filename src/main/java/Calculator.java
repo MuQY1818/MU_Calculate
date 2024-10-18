@@ -99,7 +99,7 @@ public class Calculator extends JFrame {
             }
         }
 
-        // 修改特殊按钮样式
+        // 修改按钮样式
         JButton decimalButton = createStyledButton(".");
         JButton equalsButton = createStyledButton("=");
         styleEqualsButton(equalsButton);
@@ -133,10 +133,6 @@ public class Calculator extends JFrame {
         gbc.weighty = 1.0;
         panel.add(clearButton, gbc);
 
-        add(panel, BorderLayout.CENTER);
-        setSize(350, 450);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
         // 添加退格按钮
         gbc.gridx = 0;
         gbc.gridy = 6; 
@@ -145,6 +141,10 @@ public class Calculator extends JFrame {
         gbc.weightx = 1.0;
         gbc.weighty = 0.5;
         panel.add(backspaceButton, gbc);
+
+        add(panel, BorderLayout.CENTER);
+        setSize(350, 450);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     }
 
     private JButton createStyledButton(String text) {
@@ -158,11 +158,13 @@ public class Calculator extends JFrame {
         
         button.addMouseListener(new MouseAdapter() {
             @Override
+            // 设置鼠标悬停效果
             public void mouseEntered(MouseEvent e) {
                 button.setBackground(button.getBackground().darker());
             }
 
             @Override
+            // 恢复按钮颜色
             public void mouseExited(MouseEvent e) {
                 button.setBackground(BUTTON_BACKGROUND);
             }
@@ -228,7 +230,7 @@ public class Calculator extends JFrame {
 
             // 处理模运算 %
             else if (command.equals("%")) {
-                // 直接将 % 添加到显示内容中，作为一个运算符
+                // 直接将 % 添加到算式中，作为一个运算符
                 display.setText(display.getText() + " % ");
             }
 
@@ -246,13 +248,13 @@ public class Calculator extends JFrame {
                 }
             }
 
-            // 处理贷款计算 Loan
+            // 打开贷款计算器
             else if (command.equals("Loan")) {
                 LoanCalculator loanCalculator = new LoanCalculator();
                 loanCalculator.setVisible(true);
             }
 
-            // 处理数字和运算符
+            // 处理数字和运算符，直接加到算式中即可
             else {
                 display.setText(display.getText() + command);
             }
@@ -260,7 +262,7 @@ public class Calculator extends JFrame {
     }
 
 
-    // 解析和计算表达式的方法
+    // 计算表达式
     private String evaluateExpression(String expression) {
         try {
             // 将表达式转换为后缀表达式
@@ -270,11 +272,11 @@ public class Calculator extends JFrame {
             double result = evaluatePostfix(postfix);
 
             return String.valueOf(result);
-        } catch (ArithmeticException e) {
+        } catch (ArithmeticException e) { // 除零错误
             return "Math Error: " + e.getMessage();
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException e) { // 表达式错误
             return "Invalid Expression";
-        } catch (Exception e) {
+        } catch (Exception e) { // 其他错误
             return "Error";
         }
     }
@@ -288,9 +290,10 @@ public class Calculator extends JFrame {
 
         for (int i = 0; i < expression.length(); i++) {
             char c = expression.charAt(i);
+            // 如果当前字符是数字或小数点，则将其添加到数字中
             if (Character.isDigit(c) || c == '.') {
                 number.append(c);
-                expectOperand = false;
+                expectOperand = false; 
             } else if (c == '-' && expectOperand) {
                 // 处理负数
                 number.append(c);
@@ -307,7 +310,7 @@ public class Calculator extends JFrame {
                         postfix.append(stack.pop()).append(" ");
                     }
                     if (!stack.isEmpty() && stack.peek() == '(') {
-                        stack.pop();
+                        stack.pop(); // 弹出左括号
                     }
                     expectOperand = false;
                 } else if (isOperator(c)) {
@@ -324,7 +327,7 @@ public class Calculator extends JFrame {
             postfix.append(number).append(" ");
         }
 
-        while (!stack.isEmpty()) {
+        while (!stack.isEmpty()) { // 将栈中剩余的运算符添加到后缀表达式中
             if (stack.peek() == '(') {
                 return "Invalid Expression";
             }
@@ -338,12 +341,12 @@ public class Calculator extends JFrame {
     private double evaluatePostfix(String postfix) {
         Stack<Double> stack = new Stack<>();
         // 将后缀表达式分割为单个元素
-        String[] tokens = postfix.split("\\s+");
+        String[] tokens = postfix.split("\\s+"); // 以空格或者多个空格为分隔符
 
         for (String token : tokens) {
-            if (token.matches("-?\\d+(\\.\\d+)?")) {
+            if (token.matches("-?\\d+(\\.\\d+)?")) { // 匹配数字
                 stack.push(Double.parseDouble(token));
-            } else if (token.length() == 1 && isOperator(token.charAt(0))) {
+            } else if (token.length() == 1 && isOperator(token.charAt(0))) { // 匹配运算符
                 if (stack.size() < 2) {
                     throw new IllegalArgumentException("Invalid expression");
                 }
@@ -354,16 +357,16 @@ public class Calculator extends JFrame {
                     case '-': stack.push(a - b); break;
                     case '*': stack.push(a * b); break;
                     case '/':
-                        if (b == 0) throw new ArithmeticException("Division by zero");
+                        if (b == 0) throw new ArithmeticException("Division by zero"); // 除零错误
                         stack.push(a / b);
                         break;
                     case '%':
-                        if (b == 0) throw new ArithmeticException("Modulo by zero");
+                        if (b == 0) throw new ArithmeticException("Modulo by zero"); // 除零错误
                         stack.push(a % b);
                         break;
                 }
             } else {
-                throw new IllegalArgumentException("Invalid token: " + token);
+                throw new IllegalArgumentException("Invalid token: " + token); // 表达式错误
             }
         }
 
