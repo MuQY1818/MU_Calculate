@@ -14,6 +14,9 @@ public class Calculator extends JFrame {
     private static final Color OPERATOR_BACKGROUND = new Color(252, 152, 3);
     private static final Color SPECIAL_BUTTON_BACKGROUND = new Color(220, 220, 220);
 
+
+    private ImageIcon icon;
+
     public Calculator() {
         // 设置系统外观
         try {
@@ -142,6 +145,17 @@ public class Calculator extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         // 使用 SwingUtilities.invokeLater 来设置初始状态
+        // 加载图标
+        try {
+            icon = new ImageIcon(getClass().getResource("/Calculator_31111.png"));
+            if (icon.getImageLoadStatus() == MediaTracker.COMPLETE) {
+                setIconImage(icon.getImage());
+            } else {
+                System.out.println("Failed to load icon.");
+            }
+        } catch (Exception e) {
+            System.out.println("Error loading icon: " + e.getMessage());
+        }
         SwingUtilities.invokeLater(this::setInitialState);
     }
 
