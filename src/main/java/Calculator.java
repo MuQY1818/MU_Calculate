@@ -17,12 +17,13 @@ public class Calculator extends JFrame {
     public Calculator() {
         // 设置系统外观
         try {
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+            // 设置现代Look and feel
+            UIManager.setLookAndFeel("javax.swing.plaf.nimbus.NimbusLookAndFeel");
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        // 设置窗口标题和布局
+        // 设置窗口标题和布局管理器
         setTitle("My Calculator");
         setLayout(new BorderLayout());
 
@@ -83,11 +84,6 @@ public class Calculator extends JFrame {
         for (int row = 0; row < 5; row++) {
             for (int col = 0; col < 4; col++) {
                 JButton button = createStyledButton(buttons[index]);
-                if (buttons[index].matches("[+\\-*/]")) {
-                    styleOperatorButton(button);
-                } else if (buttons[index].matches("[√%1/xLoan]")) {
-                    styleSpecialButton(button);
-                }
                 gbc.gridx = col;
                 gbc.gridy = row;
                 gbc.gridwidth = 1;
@@ -150,35 +146,49 @@ public class Calculator extends JFrame {
     private JButton createStyledButton(String text) {
         JButton button = new JButton(text);
         button.setFont(new Font("Segoe UI", Font.PLAIN, 18));
-        button.setBackground(BUTTON_BACKGROUND);
-        button.setForeground(BUTTON_FOREGROUND);
         button.setFocusPainted(false);
         button.setBorderPainted(false);
         button.addActionListener(new ButtonClickListener());
         
+        // 根据按钮类型设置初始背景色和前景色
+        if (text.matches("[+\\-*/]")) {
+            button.setBackground(OPERATOR_BACKGROUND);
+            button.setFont(new Font("Segoe UI", Font.BOLD, 18));
+            button.setForeground(Color.WHITE);
+        } else if (text.matches("[√%1/xLoan]")) {
+            button.setBackground(SPECIAL_BUTTON_BACKGROUND);
+        } else if (text.equals("=")) {
+            button.setBackground(new Color(0, 122, 255));
+            button.setFont(new Font("Segoe UI", Font.BOLD, 18));
+            button.setForeground(Color.WHITE);
+        } else {
+            button.setBackground(BUTTON_BACKGROUND);
+            button.setForeground(BUTTON_FOREGROUND);
+        }
+        
         button.addMouseListener(new MouseAdapter() {
+            private Color originalBackground;
+            private Color originalForeground;
+            
             @Override
-            // 设置鼠标悬停效果
             public void mouseEntered(MouseEvent e) {
+                originalBackground = button.getBackground();
+                originalForeground = button.getForeground();
                 button.setBackground(button.getBackground().darker());
+                // 如果原来是白色字体，鼠标悬停时保持白色
+                if (!originalForeground.equals(BUTTON_FOREGROUND)) {
+                    button.setForeground(Color.WHITE);
+                }
             }
 
             @Override
-            // 恢复按钮颜色
             public void mouseExited(MouseEvent e) {
-                button.setBackground(BUTTON_BACKGROUND);
+                button.setBackground(originalBackground);
+                button.setForeground(originalForeground);
             }
         });
 
         return button;
-    }
-
-    private void styleOperatorButton(JButton button) {
-        button.setBackground(OPERATOR_BACKGROUND);
-    }
-
-    private void styleSpecialButton(JButton button) {
-        button.setBackground(SPECIAL_BUTTON_BACKGROUND);
     }
 
     private void styleEqualsButton(JButton button) {

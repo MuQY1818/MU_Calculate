@@ -5,14 +5,14 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 public class LoanCalculator extends JFrame {
-    private JTextField loanAmountField;
-    private JTextField annualRateField;
-    private JTextField loanYearsField;
-    private JLabel monthlyPaymentLabel;
-    private JLabel totalInterestLabel;
-    private JLabel totalPaymentLabel;
-    private JRadioButton equalPrincipalInterestButton;
-    private JRadioButton equalPrincipalButton;
+    private JTextField loanAmountField; // 贷款金额
+    private JTextField annualRateField; // 年利率
+    private JTextField loanYearsField; // 贷款年限
+    private JLabel monthlyPaymentLabel; // 月均还款
+    private JLabel totalInterestLabel; // 利息总额
+    private JLabel totalPaymentLabel; // 还款总额
+    private JRadioButton equalPrincipalInterestButton; // 等额本息
+    private JRadioButton equalPrincipalButton; // 等额本金
 
     public LoanCalculator() {
         setTitle("贷款计算器");
