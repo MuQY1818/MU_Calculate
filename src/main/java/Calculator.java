@@ -2,11 +2,17 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.Stack;
 
 public class Calculator extends JFrame {
     private JTextField display; // 显示输入和结果的文本框
     private final String placeholder = "Enter calculation here..."; // 提示词
+    private static final Color BUTTON_BACKGROUND = new Color(240, 240, 240);
+    private static final Color BUTTON_FOREGROUND = new Color(50, 50, 50);
+    private static final Color OPERATOR_BACKGROUND = new Color(252, 152, 3);
+    private static final Color SPECIAL_BUTTON_BACKGROUND = new Color(220, 220, 220);
 
     public Calculator() {
         // 设置系统外观
@@ -23,19 +29,20 @@ public class Calculator extends JFrame {
         // 创建显示框
         display = new JTextField();
         display.setEditable(true); // 允许用户直接在文本框中输入
-        display.setFont(new Font("Arial", Font.BOLD, 28)); // 设置字体样式
-        display.setForeground(Color.GRAY); // 设置提示词颜色为灰色
-        display.setBackground(Color.WHITE); // 设置背景颜色为白色
+        display.setFont(new Font("Segoe UI", Font.PLAIN, 28));
+        display.setForeground(new Color(80, 80, 80));
+        display.setBackground(new Color(250, 250, 250));
         display.setHorizontalAlignment(JTextField.RIGHT); // 设置文本右对齐
         display.setText(placeholder); // 初始时显示提示词
         display.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(Color.DARK_GRAY, 2), // 深灰色线条边框
-                BorderFactory.createEmptyBorder(5, 10, 5, 10) // 内边距
+                BorderFactory.createLineBorder(new Color(200, 200, 200), 1),
+                BorderFactory.createEmptyBorder(10, 15, 10, 15)
         ));
 
         // 焦点监听器实现提示文字功能
         display.addFocusListener(new java.awt.event.FocusAdapter() {
             @Override
+            // 获得焦点时，清楚提示文字
             public void focusGained(java.awt.event.FocusEvent e) {
                 if (display.getText().equals(placeholder)) {
                     display.setText("");
@@ -44,6 +51,7 @@ public class Calculator extends JFrame {
             }
 
             @Override
+            // 失去焦点时，如果文本框为空，显示提示文字
             public void focusLost(java.awt.event.FocusEvent e) {
                 if (display.getText().trim().isEmpty()) {
                     display.setText(placeholder);
@@ -70,15 +78,15 @@ public class Calculator extends JFrame {
                 "√", "%", "1/x", "Loan"
         };
 
-
         int index = 0;
         for (int row = 0; row < 5; row++) {
             for (int col = 0; col < 4; col++) {
-                JButton button = new JButton(buttons[index]);
-                button.setFont(new Font("Arial", Font.BOLD, 20));
-                button.setBackground(Color.LIGHT_GRAY);
-                button.addActionListener(new ButtonClickListener());
-
+                JButton button = createStyledButton(buttons[index]);
+                if (buttons[index].matches("[+\\-*/]")) {
+                    styleOperatorButton(button);
+                } else if (buttons[index].matches("[√%1/xLoan]")) {
+                    styleSpecialButton(button);
+                }
                 gbc.gridx = col;
                 gbc.gridy = row;
                 gbc.gridwidth = 1;
@@ -90,24 +98,14 @@ public class Calculator extends JFrame {
             }
         }
 
-        // 添加小数点按钮
-        JButton decimalButton = new JButton(".");
-        decimalButton.setFont(new Font("Arial", Font.BOLD, 20));
-        decimalButton.setBackground(Color.LIGHT_GRAY);
-        decimalButton.addActionListener(new ButtonClickListener());
-
-        gbc.gridx = 2;
-        gbc.gridy = 5;
-        gbc.gridwidth = 1;
-        gbc.gridheight = 1;
-        panel.add(decimalButton, gbc);
+        // 修改特殊按钮样式
+        JButton decimalButton = createStyledButton(".");
+        JButton equalsButton = createStyledButton("=");
+        styleEqualsButton(equalsButton);
+        JButton clearButton = createStyledButton("C");
+        JButton backspaceButton = createStyledButton("Backspace");
 
         // 添加等号按钮
-        JButton equalsButton = new JButton("=");
-        equalsButton.setFont(new Font("Arial", Font.BOLD, 20));
-        equalsButton.setBackground(Color.LIGHT_GRAY);
-        equalsButton.addActionListener(new ButtonClickListener());
-
         gbc.gridx = 0;
         gbc.gridy = 5;
         gbc.gridwidth = 2;
@@ -116,12 +114,16 @@ public class Calculator extends JFrame {
         gbc.weighty = 1.0;
         panel.add(equalsButton, gbc);
 
-        // 添加清空按钮
-        JButton clearButton = new JButton("C");
-        clearButton.setFont(new Font("Arial", Font.BOLD, 20));
-        clearButton.setBackground(Color.LIGHT_GRAY);
-        clearButton.addActionListener(new ButtonClickListener());
+        // 添加小数点按钮
+        gbc.gridx = 2;
+        gbc.gridy = 5;
+        gbc.gridwidth = 1;
+        gbc.gridheight = 1;
+        gbc.weightx = 1.0;
+        gbc.weighty = 1.0;
+        panel.add(decimalButton, gbc);
 
+        // 添加清空按钮
         gbc.gridx = 3;
         gbc.gridy = 5;
         gbc.gridwidth = 1;
@@ -131,15 +133,10 @@ public class Calculator extends JFrame {
         panel.add(clearButton, gbc);
 
         add(panel, BorderLayout.CENTER);
-        setSize(400, 500);
+        setSize(350, 450);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         // 添加退格按钮
-        JButton backspaceButton = new JButton("Backspace");
-        backspaceButton.setFont(new Font("Arial", Font.BOLD, 20));
-        backspaceButton.setBackground(Color.LIGHT_GRAY);
-        backspaceButton.addActionListener(new ButtonClickListener());
-
         gbc.gridx = 0;
         gbc.gridy = 6; 
         gbc.gridwidth = 4;
@@ -147,6 +144,42 @@ public class Calculator extends JFrame {
         gbc.weightx = 1.0;
         gbc.weighty = 0.5;
         panel.add(backspaceButton, gbc);
+    }
+
+    private JButton createStyledButton(String text) {
+        JButton button = new JButton(text);
+        button.setFont(new Font("Segoe UI", Font.PLAIN, 18));
+        button.setBackground(BUTTON_BACKGROUND);
+        button.setForeground(BUTTON_FOREGROUND);
+        button.setFocusPainted(false);
+        button.setBorderPainted(false);
+        button.addActionListener(new ButtonClickListener());
+        
+        button.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                button.setBackground(button.getBackground().darker());
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                button.setBackground(BUTTON_BACKGROUND);
+            }
+        });
+
+        return button;
+    }
+
+    private void styleOperatorButton(JButton button) {
+        button.setBackground(OPERATOR_BACKGROUND);
+    }
+
+    private void styleSpecialButton(JButton button) {
+        button.setBackground(SPECIAL_BUTTON_BACKGROUND);
+    }
+
+    private void styleEqualsButton(JButton button) {
+        button.setBackground(new Color(0, 122, 255));
     }
 
     private class ButtonClickListener implements ActionListener {
