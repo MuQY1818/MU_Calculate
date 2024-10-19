@@ -50,6 +50,12 @@ public class Calculator extends JFrame {
 
     private Color currentTextColor;
 
+    // 为科学计算按钮定义颜色
+    private static final Color LIGHT_SCIENTIFIC_BUTTON_BACKGROUND = new Color(200, 200, 255);
+    private static final Color LIGHT_SCIENTIFIC_BUTTON_FOREGROUND = new Color(50, 50, 150);
+    private static final Color DARK_SCIENTIFIC_BUTTON_BACKGROUND = new Color(100, 100, 200);
+    private static final Color DARK_SCIENTIFIC_BUTTON_FOREGROUND = new Color(220, 220, 255);
+
     public Calculator() {
         // 设置系统外观
         try {
@@ -295,8 +301,8 @@ public class Calculator extends JFrame {
             button.setForeground(Color.WHITE);
         } else if (text.matches("sin θ|cos θ|tan θ|ln x|log x|eˣ|xʸ")) {
             button.setFont(new Font("Segoe UI", Font.ITALIC, 18));
-            button.setBackground(new Color(200, 200, 255));
-            button.setForeground(new Color(50, 50, 150));
+            button.setBackground(LIGHT_SCIENTIFIC_BUTTON_BACKGROUND);
+            button.setForeground(LIGHT_SCIENTIFIC_BUTTON_FOREGROUND);
         } else {
             button.setBackground(BUTTON_BACKGROUND);
             button.setForeground(BUTTON_FOREGROUND);
@@ -569,6 +575,8 @@ public class Calculator extends JFrame {
         Color operatorBackground = isDarkTheme ? DARK_OPERATOR_BACKGROUND : LIGHT_OPERATOR_BACKGROUND;
         Color specialButtonBackground = isDarkTheme ? DARK_SPECIAL_BUTTON_BACKGROUND : LIGHT_SPECIAL_BUTTON_BACKGROUND;
         Color equalsButtonBackground = isDarkTheme ? DARK_EQUALS_BUTTON_BACKGROUND : LIGHT_EQUALS_BUTTON_BACKGROUND;
+        Color scientificButtonBackground = isDarkTheme ? DARK_SCIENTIFIC_BUTTON_BACKGROUND : LIGHT_SCIENTIFIC_BUTTON_BACKGROUND;
+        Color scientificButtonForeground = isDarkTheme ? DARK_SCIENTIFIC_BUTTON_FOREGROUND : LIGHT_SCIENTIFIC_BUTTON_FOREGROUND;
 
         // 为运算符和等号按钮设置特定的前景色
         Color operatorForeground = isDarkTheme ? DARK_TEXT_COLOR : LIGHT_BACKGROUND_COLOR;
@@ -620,6 +628,9 @@ public class Calculator extends JFrame {
                         } else if (jButton.getText().matches("[√%1/x]")) {
                             jButton.setBackground(specialButtonBackground);
                             jButton.setForeground(currentTextColor);
+                        } else if (jButton.getText().matches("sin θ|cos θ|tan θ|ln x|log x|eˣ|xʸ")) {
+                            jButton.setBackground(scientificButtonBackground);
+                            jButton.setForeground(scientificButtonForeground);
                         } else {
                             jButton.setBackground(buttonBackground);
                             jButton.setForeground(currentTextColor);
