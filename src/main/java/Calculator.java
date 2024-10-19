@@ -1,21 +1,54 @@
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 import java.util.Stack;
+import java.util.ArrayList;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 public class Calculator extends JFrame {
     private JTextField display; // 显示输入和结果的文本框
     private final String placeholder = "Enter calculation here..."; // 提示词
-    private static final Color BUTTON_BACKGROUND = new Color(240, 240, 240);
+    private static final Color BACKGROUND_COLOR = new Color(240, 240, 240);
+    private static final Color DISPLAY_BACKGROUND = new Color(255, 255, 255);
+    private static final Color BUTTON_BACKGROUND = new Color(250, 250, 250);
     private static final Color BUTTON_FOREGROUND = new Color(50, 50, 50);
-    private static final Color OPERATOR_BACKGROUND = new Color(252, 152, 3);
-    private static final Color SPECIAL_BUTTON_BACKGROUND = new Color(220, 220, 220);
-
+    private static final Color OPERATOR_BACKGROUND = new Color(255, 149, 0);
+    private static final Color SPECIAL_BUTTON_BACKGROUND = new Color(230, 230, 230);
+    private static final Color EQUALS_BUTTON_BACKGROUND = new Color(0, 122, 255);
 
     private ImageIcon icon;
+    private ArrayList<String> history = new ArrayList<>();
+    private JButton historyButton;
+    private ImageIcon historyIcon;
+
+    // 浅色主题颜色
+    private static final Color LIGHT_BACKGROUND_COLOR = new Color(240, 240, 240);
+    private static final Color LIGHT_DISPLAY_BACKGROUND = new Color(255, 255, 255);
+    private static final Color LIGHT_BUTTON_BACKGROUND = new Color(250, 250, 250);
+    private static final Color LIGHT_BUTTON_FOREGROUND = new Color(50, 50, 50);
+    private static final Color LIGHT_OPERATOR_BACKGROUND = new Color(255, 149, 0);
+    private static final Color LIGHT_SPECIAL_BUTTON_BACKGROUND = new Color(230, 230, 230);
+    private static final Color LIGHT_EQUALS_BUTTON_BACKGROUND = new Color(0, 122, 255);
+
+    // 深色主题颜色
+    private static final Color DARK_BACKGROUND_COLOR = new Color(50, 50, 50);
+    private static final Color DARK_DISPLAY_BACKGROUND = new Color(70, 70, 70);
+    private static final Color DARK_BUTTON_BACKGROUND = new Color(80, 80, 80);
+    private static final Color DARK_BUTTON_FOREGROUND = new Color(255, 255, 255);
+    private static final Color DARK_OPERATOR_BACKGROUND = new Color(255, 149, 0);
+    private static final Color DARK_SPECIAL_BUTTON_BACKGROUND = new Color(100, 100, 100);
+    private static final Color DARK_EQUALS_BUTTON_BACKGROUND = new Color(0, 122, 255);
+
+    private boolean isDarkTheme = false;
+
+    private JMenuItem lightThemeItem;
+    private JMenuItem darkThemeItem;
+
+    private static final Color LIGHT_TEXT_COLOR = new Color(50, 50, 50);
+    private static final Color DARK_TEXT_COLOR = new Color(255, 255, 255);
+
+    private Color currentTextColor;
 
     public Calculator() {
         // 设置系统外观
@@ -33,15 +66,16 @@ public class Calculator extends JFrame {
         // 创建显示框
         display = new JTextField();
         display.setEditable(true); // 允许用户直接在文本框中输入
-        display.setFont(new Font("Segoe UI", Font.PLAIN, 28));
-        display.setForeground(Color.GRAY);  // 初始颜色设为灰色
-        display.setBackground(new Color(250, 250, 250));
+        display.setFont(new Font("Segoe UI", Font.PLAIN, 32));
+        display.setBackground(DISPLAY_BACKGROUND);
         display.setHorizontalAlignment(JTextField.RIGHT); // 设置文本右对齐
         display.setText(placeholder); // 初始时显示提示词
+        currentTextColor = LIGHT_TEXT_COLOR;
+        display.setForeground(currentTextColor.brighter());
         // 设置边框样式
         display.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(new Color(200, 200, 200), 1),
-                BorderFactory.createEmptyBorder(10, 15, 10, 15)
+                BorderFactory.createEmptyBorder(15, 15, 15, 15)
         ));
         // 焦点监听器实现提示文字功能
         display.addFocusListener(new java.awt.event.FocusAdapter() {
@@ -79,9 +113,10 @@ public class Calculator extends JFrame {
                 "4", "5", "6", "×",
                 "1", "2", "3", "-",
                 "(", "0", ")", "+",
-                "√", "%", "1/x", "Loan"
+                "√", "%", "1/x", "C"
         };
 
+        // 添加基本按钮
         int index = 0;
         for (int row = 0; row < 5; row++) {
             for (int col = 0; col < 4; col++) {
@@ -97,51 +132,71 @@ public class Calculator extends JFrame {
             }
         }
 
-        // 修改按钮样式
-        JButton decimalButton = createStyledButton(".");
-        JButton equalsButton = createStyledButton("=");
-        styleEqualsButton(equalsButton);
-        JButton clearButton = createStyledButton("C");
-        JButton backspaceButton = createStyledButton("Backspace");
+        // 修改高级函数按钮
+        String[] advancedButtons = {"sin θ", "cos θ", "tan θ", "ln x", "log x", "eˣ", "xʸ", "←"};
+        int row = 5;
+        for (int col = 0; col < advancedButtons.length; col++) {
+            JButton button = createStyledButton(advancedButtons[col]);
+            gbc.gridx = col % 4;
+            gbc.gridy = row + col / 4;
+            gbc.gridwidth = 1;
+            gbc.gridheight = 1;
+            panel.add(button, gbc);
+        }
 
         // 添加等号按钮
+        JButton equalsButton = createStyledButton("=");
+        styleEqualsButton(equalsButton);
         gbc.gridx = 0;
-        gbc.gridy = 5;
+        gbc.gridy = 7;
         gbc.gridwidth = 2;
         gbc.gridheight = 1;
-        gbc.weightx = 1.0;
-        gbc.weighty = 1.0;
         panel.add(equalsButton, gbc);
 
-        // 添加小数点按钮
+        // 修改历史记录按钮
+        historyButton = createHistoryButton();
         gbc.gridx = 2;
-        gbc.gridy = 5;
-        gbc.gridwidth = 1;
+        gbc.gridy = 7;
+        gbc.gridwidth = 2;
         gbc.gridheight = 1;
-        gbc.weightx = 1.0;
-        gbc.weighty = 1.0;
-        panel.add(decimalButton, gbc);
-
-        // 添加清空按钮
-        gbc.gridx = 3;
-        gbc.gridy = 5;
-        gbc.gridwidth = 1;
-        gbc.gridheight = 1;
-        gbc.weightx = 1.0;
-        gbc.weighty = 1.0;
-        panel.add(clearButton, gbc);
+        panel.add(historyButton, gbc);
 
         // 添加退格按钮
-        gbc.gridx = 0;
-        gbc.gridy = 6; 
+        JButton backspaceButton = createStyledButton("←");
+        gbc.gridx = 3;
+        gbc.gridy = 6;
         gbc.gridwidth = 4;
         gbc.gridheight = 1;
-        gbc.weightx = 1.0;
         gbc.weighty = 0.5;
         panel.add(backspaceButton, gbc);
 
+        // 创建菜单栏
+        JMenuBar menuBar = new JMenuBar();
+        setJMenuBar(menuBar);
+
+        // 创建设置菜单
+        JMenu settingsMenu = new JMenu("设置");
+        menuBar.add(settingsMenu);
+
+        // 创建主题子菜单
+        JMenu themeMenu = new JMenu("主题");
+        settingsMenu.add(themeMenu);
+
+        // 建主题选项
+        lightThemeItem = new JMenuItem("浅色主题");
+        darkThemeItem = new JMenuItem("深色主题");
+
+        lightThemeItem.addActionListener(e -> setTheme(false));
+        darkThemeItem.addActionListener(e -> setTheme(true));
+
+        themeMenu.add(lightThemeItem);
+        themeMenu.add(darkThemeItem);
+
+        // 初始化主题
+        updateThemeMenuItems();
+
         add(panel, BorderLayout.CENTER);
-        setSize(350, 450);
+        setSize(400, 600);  // 调整为更大的尺寸
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         // 使用 SwingUtilities.invokeLater 来设置初始状态
@@ -157,6 +212,44 @@ public class Calculator extends JFrame {
             System.out.println("Error loading icon: " + e.getMessage());
         }
         SwingUtilities.invokeLater(this::setInitialState);
+        // 创建工具菜单
+        JMenu toolsMenu = new JMenu("工具");
+        JMenuItem loanCalculatorItem = new JMenuItem("贷款计算器");
+        loanCalculatorItem.addActionListener(e -> openLoanCalculator());
+        toolsMenu.add(loanCalculatorItem);
+        menuBar.add(toolsMenu);
+        setJMenuBar(menuBar);
+
+        // 设置窗口背景色
+        getContentPane().setBackground(BACKGROUND_COLOR);
+
+        // 加载历史记录图标
+        try {
+            historyIcon = new ImageIcon(getClass().getResource("/history_icon.png"));
+            Image img = historyIcon.getImage();
+            Image newImg = img.getScaledInstance(20, 20, java.awt.Image.SCALE_SMOOTH);
+            historyIcon = new ImageIcon(newImg);
+        } catch (Exception e) {
+            System.out.println("Error loading history icon: " + e.getMessage());
+        }
+
+        // 添加文档监听器来处理文本变化
+        display.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                updateTextColor();
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                updateTextColor();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                updateTextColor();
+            }
+        });
     }
 
     private void setInitialState() {
@@ -179,46 +272,46 @@ public class Calculator extends JFrame {
 
     private JButton createStyledButton(String text) {
         JButton button = new JButton(text);
-        button.setFont(new Font("Segoe UI", Font.PLAIN, 18));
+        button.setFont(new Font("Segoe UI", Font.PLAIN, 20));
         button.setFocusPainted(false);
         button.setBorderPainted(false);
+        button.setOpaque(true);
         button.addActionListener(new ButtonClickListener());
         
         // 根据按钮类型设置初始背景色和前景色
         if (text.matches("[+\\-×÷]")) {
             button.setBackground(OPERATOR_BACKGROUND);
-            button.setFont(new Font("Segoe UI", Font.BOLD, 18));
+            button.setFont(new Font("Segoe UI", Font.BOLD, 22));
             button.setForeground(Color.WHITE);
-        } else if (text.matches("[√%1/xLoan]")) {
+        } else if (text.matches("[√%1/x]")) {
             button.setBackground(SPECIAL_BUTTON_BACKGROUND);
         } else if (text.equals("=")) {
-            button.setBackground(new Color(0, 122, 255));
-            button.setFont(new Font("Segoe UI", Font.BOLD, 18));
+            button.setBackground(EQUALS_BUTTON_BACKGROUND);
+            button.setFont(new Font("Segoe UI", Font.BOLD, 22));
             button.setForeground(Color.WHITE);
+        } else if (text.equals("←")) {
+            button.setBackground(new Color(255, 59, 48));
+            button.setFont(new Font("Segoe UI", Font.BOLD, 24));
+            button.setForeground(Color.WHITE);
+        } else if (text.matches("sin θ|cos θ|tan θ|ln x|log x|eˣ|xʸ")) {
+            button.setFont(new Font("Segoe UI", Font.ITALIC, 18));
+            button.setBackground(new Color(200, 200, 255));
+            button.setForeground(new Color(50, 50, 150));
         } else {
             button.setBackground(BUTTON_BACKGROUND);
             button.setForeground(BUTTON_FOREGROUND);
         }
         
+        // 添加鼠标悬停效果
         button.addMouseListener(new MouseAdapter() {
-            private Color originalBackground;
-            private Color originalForeground;
-            
             @Override
             public void mouseEntered(MouseEvent e) {
-                originalBackground = button.getBackground();
-                originalForeground = button.getForeground();
                 button.setBackground(button.getBackground().darker());
-                // 如果原来是白色字体，鼠标悬停时保持白色
-                if (!originalForeground.equals(BUTTON_FOREGROUND)) {
-                    button.setForeground(Color.WHITE);
-                }
             }
 
             @Override
             public void mouseExited(MouseEvent e) {
-                button.setBackground(originalBackground);
-                button.setForeground(originalForeground);
+                button.setBackground(button.getBackground().brighter());
             }
         });
 
@@ -227,6 +320,34 @@ public class Calculator extends JFrame {
 
     private void styleEqualsButton(JButton button) {
         button.setBackground(new Color(0, 122, 255));
+    }
+
+    private JButton createHistoryButton() {
+        JButton button = new JButton("Hist");
+        button.setFont(new Font("Segoe UI", Font.PLAIN, 18));
+        button.setFocusPainted(false);
+        button.setBorderPainted(false);
+        button.setOpaque(true);
+        button.setBackground(SPECIAL_BUTTON_BACKGROUND);
+        button.setForeground(BUTTON_FOREGROUND);
+        
+        // 只添加显示历史记录的动作
+        button.addActionListener(e -> showHistory());
+        
+        // 添加鼠标悬停效果
+        button.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                button.setBackground(button.getBackground().darker());
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                button.setBackground(button.getBackground().brighter());
+            }
+        });
+
+        return button;
     }
 
     private class ButtonClickListener implements ActionListener {
@@ -238,20 +359,27 @@ public class Calculator extends JFrame {
 
             String command = e.getActionCommand();
 
+            // 如果显示的是Error，且输入不是退格或清除，则先清空显示
+            if (display.getText().equals("Error") || display.getText().startsWith("Error")) {
+                if (!command.equals("←") && !command.equals("C")) {
+                    display.setText("");
+                }
+            }
+
             if (display.getText().equals(placeholder)) {
                 display.setText("");
                 display.setForeground(Color.BLACK);
             }
 
             // 退格按钮
-            if (command.equals("Backspace")) {
+            if (command.equals("←")) {
                 String currentText = display.getText();
-                if (!currentText.isEmpty()) {
+                if (!currentText.isEmpty() && !currentText.equals(placeholder)) {
                     display.setText(currentText.substring(0, currentText.length() - 1));
-                }
-                if (display.getText().isEmpty()) {
-                    display.setText(placeholder);
-                    display.setForeground(Color.GRAY);
+                    if (display.getText().isEmpty()) {
+                        display.setText(placeholder);
+                        display.setForeground(Color.GRAY);
+                    }
                 }
             }
 
@@ -267,189 +395,269 @@ public class Calculator extends JFrame {
                 display.setText(result);
             }
 
-            // 拓展功能
-            // 处理平方根 √
-            else if (command.equals("√")) {
-                try {
-                    double value = Double.parseDouble(display.getText());
-                    display.setText(String.valueOf(Math.sqrt(value)));  // 计算平方根
-                } catch (NumberFormatException ex) {
-                    display.setText("Error");
-                }
-            }
-
-            // 处理模运算 %
-            else if (command.equals("%")) {
-                // 直接将 % 添加到算式中，作为一个运算符
-                display.setText(display.getText() + " % ");
-            }
-
-            // 处理倒数 1/x
-            else if (command.equals("1/x")) {
-                try {
-                    double value = Double.parseDouble(display.getText());
-                    if (value != 0) {
-                        display.setText(String.valueOf(1 / value));  // 计算倒数
-                    } else {
-                        display.setText("Error");
-                    }
-                } catch (NumberFormatException ex) {
-                    display.setText("Error");
-                }
-            }
-
-            // 打开贷款计算器
-            else if (command.equals("Loan")) {
-                LoanCalculator loanCalculator = new LoanCalculator();
-                loanCalculator.setVisible(true);
+            // 处理高级函数和特殊操作
+            else if (isAdvancedFunction(command) || command.equals("1/x")) {
+                handleAdvancedFunction(command);
             }
 
             // 处理数字和运算符，直接加到算式中即可
-            else {
+            else if (!e.getSource().equals(historyButton)) {  // 使用对象比较而不是文本比较
                 if (display.getText().equals(placeholder)) {
                     display.setText("");
                     display.setForeground(Color.BLACK);
                 }
                 display.setText(display.getText() + command);
             }
+
+            // 在每次操作后更新历史记录
+            if (!command.equals("=") && !command.equals("C") && !command.equals("←")) {
+                updateHistory(display.getText());
+            }
         }
     }
 
+    private boolean isAdvancedFunction(String function) {
+        return function.matches("sin θ|cos θ|tan θ|ln x|log x|eˣ|xʸ|1/x");
+    }
 
-    // 计算表达式
+    private void handleAdvancedFunction(String function) {
+        try {
+            double value = Double.parseDouble(display.getText());
+            double result = 0;
+            switch (function) {
+                case "sin θ": result = Math.sin(Math.toRadians(value)); break;
+                case "cos θ": result = Math.cos(Math.toRadians(value)); break;
+                case "tan θ": result = Math.tan(Math.toRadians(value)); break;
+                case "ln x": result = Math.log(value); break;
+                case "log x": result = Math.log10(value); break;
+                case "eˣ": result = Math.exp(value); break;
+                case "xʸ":
+                    String secondValue = JOptionPane.showInputDialog("请输入指数值:");
+                    result = Math.pow(value, Double.parseDouble(secondValue));
+                    break;
+                case "1/x":
+                    if (value != 0) {
+                        result = 1 / value;
+                    } else {
+                        display.setText("Error: Division by zero");
+                        return;
+                    }
+                    break;
+            }
+            display.setText(String.valueOf(result));
+        } catch (NumberFormatException ex) {
+            display.setText("Error: Invalid input");
+        } catch (ArithmeticException ex) {
+            display.setText("Error: " + ex.getMessage());
+        }
+    }
+
     private String evaluateExpression(String expression) {
         try {
-            // 将显示用的符号转换为计算用的符号
             expression = expression.replace("×", "*").replace("÷", "/");
+            Stack<Double> values = new Stack<>();
+            Stack<String> ops = new Stack<>();
+            String[] tokens = expression.split("(?<=[-+*/()^])|(?=[-+*/()^])");
 
-            // 将表达式转换为后缀表达式
-            String postfix = infixToPostfix(expression);
+            for (String token : tokens) {
+                if (token.trim().isEmpty()) continue;
+                if (isNumber(token)) {
+                    values.push(Double.parseDouble(token));
+                } else if ("(".equals(token)) {
+                    ops.push(token);
+                } else if (")".equals(token)) {
+                    while (!ops.peek().equals("(")) {
+                        values.push(applyOp(ops.pop(), values.pop(), values.pop()));
+                    }
+                    ops.pop();
+                } else if (isOperator(token)) {
+                    while (!ops.empty() && hasPrecedence(token, ops.peek())) {
+                        values.push(applyOp(ops.pop(), values.pop(), values.pop()));
+                    }
+                    ops.push(token);
+                }
+            }
 
-            // 计算后缀表达式的结果
-            double result = evaluatePostfix(postfix);
+            while (!ops.empty()) {
+                values.push(applyOp(ops.pop(), values.pop(), values.pop()));
+            }
 
-            return String.valueOf(result);
-        } catch (ArithmeticException e) { // 除零错误
-            return "Math Error: " + e.getMessage();
-        } catch (IllegalArgumentException e) { // 表达式错误
-            return "Invalid Expression";
-        } catch (Exception e) { // 其他错误
-            return "Error";
+            return String.valueOf(values.pop());
+        } catch (Exception e) {
+            return "Error: " + e.getMessage();
         }
     }
 
-    // 将中缀表达式转换为后缀表达式
-    private String infixToPostfix(String expression) {
-        StringBuilder postfix = new StringBuilder();
-        Stack<Character> stack = new Stack<>();
-        StringBuilder number = new StringBuilder();
-        boolean expectOperand = true;  // 用于区分一元负号和减法运算符
+    private boolean isNumber(String token) {
+        try {
+            Double.parseDouble(token);
+            return true;
+        } catch (NumberFormatException e) {
+            return false;
+        }
+    }
 
-        for (int i = 0; i < expression.length(); i++) {
-            char c = expression.charAt(i);
-            // 如果当前字符是数字或小数点，则将其添加到数字中
-            if (Character.isDigit(c) || c == '.') {
-                number.append(c);
-                expectOperand = false; 
-            } else if (c == '-' && expectOperand) {
-                // 处理负数
-                number.append(c);
-            } else {
-                if (number.length() > 0) {
-                    postfix.append(number).append(" ");
-                    number.setLength(0);
+    private boolean isOperator(String token) {
+        return "+-*/^".contains(token);
+    }
+
+    private boolean hasPrecedence(String op1, String op2) {
+        if (op2.equals("(") || op2.equals(")")) return false;
+        if ((op1.equals("*") || op1.equals("/")) && (op2.equals("+") || op2.equals("-"))) return false;
+        if (op1.equals("^") && !op2.equals("^")) return false;
+        return true;
+    }
+
+    private double applyOp(String op, double b, double a) {
+        switch (op) {
+            case "+": return a + b;
+            case "-": return a - b;
+            case "*": return a * b;
+            case "/": return a / b;
+            case "^": return Math.pow(a, b);
+        }
+        return 0;
+    }
+
+    private void updateHistory(String expression) {
+        history.add(expression);
+        if (history.size() > 10) {  // 只保留最近的10条记录
+            history.remove(0);
+        }
+    }
+
+    private void showHistory() {
+        JDialog historyDialog = new JDialog(this, "计算历史", true);
+        historyDialog.setLayout(new BorderLayout());
+        
+        DefaultListModel<String> listModel = new DefaultListModel<>();
+        for (String item : history) {
+            listModel.addElement(item);
+        }
+        JList<String> historyList = new JList<>(listModel);
+        JScrollPane scrollPane = new JScrollPane(historyList);
+        
+        historyDialog.add(scrollPane, BorderLayout.CENTER);
+        historyDialog.setSize(300, 400);
+        historyDialog.setLocationRelativeTo(this);
+        historyDialog.setVisible(true);
+    }
+
+    private void openLoanCalculator() {
+        SwingUtilities.invokeLater(() -> {
+            LoanCalculator loanCalculator = new LoanCalculator();
+            loanCalculator.setVisible(true);
+        });
+    }
+
+    private void setTheme(boolean isDark) {
+        isDarkTheme = isDark;
+        updateTheme();
+        updateThemeMenuItems();
+    }
+
+    private void updateThemeMenuItems() {
+        lightThemeItem.setEnabled(isDarkTheme);
+        darkThemeItem.setEnabled(!isDarkTheme);
+    }
+
+    private void updateTheme() {
+        Color backgroundColor = isDarkTheme ? DARK_BACKGROUND_COLOR : LIGHT_BACKGROUND_COLOR;
+        Color displayBackground = isDarkTheme ? DARK_DISPLAY_BACKGROUND : LIGHT_DISPLAY_BACKGROUND;
+        Color buttonBackground = isDarkTheme ? DARK_BUTTON_BACKGROUND : LIGHT_BUTTON_BACKGROUND;
+        currentTextColor = isDarkTheme ? DARK_TEXT_COLOR : LIGHT_TEXT_COLOR;
+        Color operatorBackground = isDarkTheme ? DARK_OPERATOR_BACKGROUND : LIGHT_OPERATOR_BACKGROUND;
+        Color specialButtonBackground = isDarkTheme ? DARK_SPECIAL_BUTTON_BACKGROUND : LIGHT_SPECIAL_BUTTON_BACKGROUND;
+        Color equalsButtonBackground = isDarkTheme ? DARK_EQUALS_BUTTON_BACKGROUND : LIGHT_EQUALS_BUTTON_BACKGROUND;
+
+        // 为运算符和等号按钮设置特定的前景色
+        Color operatorForeground = isDarkTheme ? DARK_TEXT_COLOR : LIGHT_BACKGROUND_COLOR;
+        Color equalsForeground = isDarkTheme ? DARK_TEXT_COLOR : LIGHT_BACKGROUND_COLOR;
+
+        getContentPane().setBackground(backgroundColor);
+        display.setBackground(displayBackground);
+        
+        // 更新输入框文本颜色
+        if (display.getText().equals(placeholder)) {
+            display.setForeground(isDarkTheme ? DARK_TEXT_COLOR.darker() : LIGHT_TEXT_COLOR.brighter());
+        } else {
+            display.setForeground(currentTextColor);
+        }
+
+        // 更新焦点监听器
+        for (FocusListener fl : display.getFocusListeners()) {
+            display.removeFocusListener(fl);
+        }
+        display.addFocusListener(new java.awt.event.FocusAdapter() {
+            @Override
+            public void focusGained(java.awt.event.FocusEvent e) {
+                if (display.getText().equals(placeholder)) {
+                    display.setText("");
+                    display.setForeground(currentTextColor);
                 }
-                if (c == '(') {
-                    stack.push(c);
-                    expectOperand = true;
-                } else if (c == ')') {
-                    while (!stack.isEmpty() && stack.peek() != '(') {
-                        postfix.append(stack.pop()).append(" ");
+            }
+
+            @Override
+            public void focusLost(java.awt.event.FocusEvent e) {
+                if (display.getText().trim().isEmpty()) {
+                    display.setText(placeholder);
+                    display.setForeground(isDarkTheme ? DARK_TEXT_COLOR.darker() : LIGHT_TEXT_COLOR.brighter());
+                }
+            }
+        });
+
+        for (Component comp : getContentPane().getComponents()) {
+            if (comp instanceof JPanel) {
+                for (Component button : ((JPanel) comp).getComponents()) {
+                    if (button instanceof JButton) {
+                        JButton jButton = (JButton) button;
+                        if (jButton.getText().matches("[+\\-×÷]")) {
+                            jButton.setBackground(operatorBackground);
+                            jButton.setForeground(operatorForeground);
+                        } else if (jButton.getText().equals("=")) {
+                            jButton.setBackground(equalsButtonBackground);
+                            jButton.setForeground(equalsForeground);
+                        } else if (jButton.getText().matches("[√%1/x]")) {
+                            jButton.setBackground(specialButtonBackground);
+                            jButton.setForeground(currentTextColor);
+                        } else {
+                            jButton.setBackground(buttonBackground);
+                            jButton.setForeground(currentTextColor);
+                        }
                     }
-                    if (!stack.isEmpty() && stack.peek() == '(') {
-                        stack.pop(); // 弹出左括号
-                    }
-                    expectOperand = false;
-                } else if (isOperator(c)) {
-                    while (!stack.isEmpty() && precedence(c) <= precedence(stack.peek())) {
-                        postfix.append(stack.pop()).append(" ");
-                    }
-                    stack.push(c);
-                    expectOperand = true;
                 }
             }
         }
 
-        if (number.length() > 0) {
-            postfix.append(number).append(" ");
-        }
-
-        while (!stack.isEmpty()) { // 将栈中剩余的运算符添加到后缀表达式中
-            if (stack.peek() == '(') {
-                return "Invalid Expression";
-            }
-            postfix.append(stack.pop()).append(" ");
-        }
-
-        return postfix.toString().trim();
-    }
-
-    // 计算后缀表达式的值
-    private double evaluatePostfix(String postfix) {
-        Stack<Double> stack = new Stack<>();
-        // 将后缀表达式分割为单个元素
-        String[] tokens = postfix.split("\\s+"); // 以空格或者多个空格为分隔符
-
-        for (String token : tokens) {
-            if (token.matches("-?\\d+(\\.\\d+)?")) { // 匹配数字
-                stack.push(Double.parseDouble(token));
-            } else if (token.length() == 1 && isOperator(token.charAt(0))) { // 匹配运算符
-                if (stack.size() < 2) {
-                    throw new IllegalArgumentException("Invalid expression");
-                }
-                double b = stack.pop();
-                double a = stack.pop();
-                switch (token.charAt(0)) {
-                    case '+': stack.push(a + b); break;
-                    case '-': stack.push(a - b); break;
-                    case '*': stack.push(a * b); break;
-                    case '/':
-                        if (b == 0) throw new ArithmeticException("Division by zero"); // 除零错误
-                        stack.push(a / b);
-                        break;
-                    case '%':
-                        if (b == 0) throw new ArithmeticException("Modulo by zero"); // 除零错误
-                        stack.push(a % b);
-                        break;
-                }
-            } else {
-                throw new IllegalArgumentException("Invalid token: " + token); // 表达式错误
+        // 更新菜单栏的背景颜色，但保持字体颜色不变
+        JMenuBar menuBar = getJMenuBar();
+        if (menuBar != null) {
+            menuBar.setBackground(backgroundColor);
+            for (int i = 0; i < menuBar.getMenuCount(); i++) {
+                JMenu menu = menuBar.getMenu(i);
+                updateMenuColors(menu);
             }
         }
 
-        if (stack.size() != 1) {
-            throw new IllegalArgumentException("Invalid expression");
+        updateTextColor(); // 确保当前文本颜色正确更新
+        SwingUtilities.updateComponentTreeUI(this);
+    }
+
+    private void updateMenuColors(JMenu menu) {
+        menu.setBackground(isDarkTheme ? DARK_BACKGROUND_COLOR : LIGHT_BACKGROUND_COLOR);
+        // 保持菜单字体颜色不变
+        for (int i = 0; i < menu.getItemCount(); i++) {
+            JMenuItem item = menu.getItem(i);
+            if (item != null) {
+                item.setBackground(isDarkTheme ? DARK_BACKGROUND_COLOR : LIGHT_BACKGROUND_COLOR);
+                // 保持菜单项字体颜色不变
+            }
         }
-        return stack.pop();
     }
 
-    // 检查是否为运算符
-    private boolean isOperator(char c) {
-        return c == '+' || c == '-' || c == '*' || c == '/' || c == '%';
-    }
-
-    // 确定运算符优先级
-    private int precedence(char c) {
-        switch (c) {
-            case '+':
-            case '-':
-                return 1;
-            case '*':
-            case '/':
-            case '%':
-                return 2;
-            default:
-                return -1;
+    private void updateTextColor() {
+        if (!display.getText().equals(placeholder)) {
+            display.setForeground(currentTextColor);
         }
     }
 
