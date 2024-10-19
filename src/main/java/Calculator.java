@@ -27,7 +27,7 @@ public class Calculator extends JFrame {
         }
 
         // 设置窗口标题和布局管理器
-        setTitle("My Calculator");
+        setTitle("简单计算器");
         setLayout(new BorderLayout());
 
         // 创建显示框
