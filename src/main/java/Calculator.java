@@ -1,8 +1,36 @@
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.*;
-import java.util.Stack;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Font;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Image;
+import java.awt.Insets;
+import java.awt.MediaTracker;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.FocusListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.ArrayList;
+import java.util.Stack;
+
+import javax.swing.BorderFactory;
+import javax.swing.DefaultListModel;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JFrame;
+import javax.swing.JList;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
@@ -469,25 +497,42 @@ public class Calculator extends JFrame {
             expression = expression.replace("×", "*").replace("÷", "/");
             Stack<Double> values = new Stack<>();
             Stack<String> ops = new Stack<>();
-            String[] tokens = expression.split("(?<=[-+*/()^])|(?=[-+*/()^])");
+            StringBuilder numberBuilder = new StringBuilder();
+            boolean lastWasOperator = true; // 用于判断是否为一元负号
 
-            for (String token : tokens) {
-                if (token.trim().isEmpty()) continue;
-                if (isNumber(token)) {
-                    values.push(Double.parseDouble(token));
-                } else if ("(".equals(token)) {
-                    ops.push(token);
-                } else if (")".equals(token)) {
-                    while (!ops.peek().equals("(")) {
-                        values.push(applyOp(ops.pop(), values.pop(), values.pop()));
+            for (int i = 0; i < expression.length(); i++) {
+                char c = expression.charAt(i);
+                if (Character.isDigit(c) || c == '.') {
+                    numberBuilder.append(c);
+                    lastWasOperator = false;
+                } else {
+                    if (numberBuilder.length() > 0) {
+                        values.push(Double.parseDouble(numberBuilder.toString()));
+                        numberBuilder.setLength(0);
                     }
-                    ops.pop();
-                } else if (isOperator(token)) {
-                    while (!ops.empty() && hasPrecedence(token, ops.peek())) {
-                        values.push(applyOp(ops.pop(), values.pop(), values.pop()));
+                    if (c == '-' && lastWasOperator) {
+                        numberBuilder.append(c);
+                    } else if ("+-*/^()".indexOf(c) != -1) {
+                        if (c == '(') {
+                            ops.push(String.valueOf(c));
+                        } else if (c == ')') {
+                            while (!ops.peek().equals("(")) {
+                                values.push(applyOp(ops.pop(), values.pop(), values.pop()));
+                            }
+                            ops.pop();
+                        } else {
+                            while (!ops.empty() && hasPrecedence(String.valueOf(c), ops.peek())) {
+                                values.push(applyOp(ops.pop(), values.pop(), values.pop()));
+                            }
+                            ops.push(String.valueOf(c));
+                        }
+                        lastWasOperator = true;
                     }
-                    ops.push(token);
                 }
+            }
+
+            if (numberBuilder.length() > 0) {
+                values.push(Double.parseDouble(numberBuilder.toString()));
             }
 
             while (!ops.empty()) {
@@ -496,7 +541,7 @@ public class Calculator extends JFrame {
 
             return String.valueOf(values.pop());
         } catch (Exception e) {
-            return "Error: " + e.getMessage();
+            return "错误: " + e.getMessage();
         }
     }
 
