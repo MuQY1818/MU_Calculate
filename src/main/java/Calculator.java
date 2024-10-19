@@ -56,6 +56,12 @@ public class Calculator extends JFrame {
     private static final Color DARK_SCIENTIFIC_BUTTON_BACKGROUND = new Color(100, 100, 200);
     private static final Color DARK_SCIENTIFIC_BUTTON_FOREGROUND = new Color(220, 220, 255);
 
+    // 为退格键定义颜色
+    private static final Color LIGHT_BACKSPACE_BACKGROUND = new Color(255, 200, 200);
+    private static final Color DARK_BACKSPACE_BACKGROUND = new Color(139, 0, 0);
+    private static final Color LIGHT_BACKSPACE_FOREGROUND = new Color(139, 0, 0);
+    private static final Color DARK_BACKSPACE_FOREGROUND = new Color(255, 200, 200);
+
     public Calculator() {
         // 设置系统外观
         try {
@@ -285,7 +291,11 @@ public class Calculator extends JFrame {
         button.addActionListener(new ButtonClickListener());
         
         // 根据按钮类型设置初始背景色和前景色
-        if (text.matches("[+\\-×÷]")) {
+        if (text.equals("←")) {
+            button.setBackground(LIGHT_BACKSPACE_BACKGROUND);
+            button.setForeground(LIGHT_BACKSPACE_FOREGROUND);
+            button.setFont(new Font("Segoe UI", Font.BOLD, 24));
+        } else if (text.matches("[+\\-×÷]")) {
             button.setBackground(OPERATOR_BACKGROUND);
             button.setFont(new Font("Segoe UI", Font.BOLD, 22));
             button.setForeground(Color.WHITE);
@@ -294,10 +304,6 @@ public class Calculator extends JFrame {
         } else if (text.equals("=")) {
             button.setBackground(EQUALS_BUTTON_BACKGROUND);
             button.setFont(new Font("Segoe UI", Font.BOLD, 22));
-            button.setForeground(Color.WHITE);
-        } else if (text.equals("←")) {
-            button.setBackground(new Color(255, 59, 48));
-            button.setFont(new Font("Segoe UI", Font.BOLD, 24));
             button.setForeground(Color.WHITE);
         } else if (text.matches("sin θ|cos θ|tan θ|ln x|log x|eˣ|xʸ")) {
             button.setFont(new Font("Segoe UI", Font.ITALIC, 18));
@@ -577,6 +583,8 @@ public class Calculator extends JFrame {
         Color equalsButtonBackground = isDarkTheme ? DARK_EQUALS_BUTTON_BACKGROUND : LIGHT_EQUALS_BUTTON_BACKGROUND;
         Color scientificButtonBackground = isDarkTheme ? DARK_SCIENTIFIC_BUTTON_BACKGROUND : LIGHT_SCIENTIFIC_BUTTON_BACKGROUND;
         Color scientificButtonForeground = isDarkTheme ? DARK_SCIENTIFIC_BUTTON_FOREGROUND : LIGHT_SCIENTIFIC_BUTTON_FOREGROUND;
+        Color backspaceBackground = isDarkTheme ? DARK_BACKSPACE_BACKGROUND : LIGHT_BACKSPACE_BACKGROUND;
+        Color backspaceForeground = isDarkTheme ? DARK_BACKSPACE_FOREGROUND : LIGHT_BACKSPACE_FOREGROUND;
 
         // 为运算符和等号按钮设置特定的前景色
         Color operatorForeground = isDarkTheme ? DARK_TEXT_COLOR : LIGHT_BACKGROUND_COLOR;
@@ -619,7 +627,10 @@ public class Calculator extends JFrame {
                 for (Component button : ((JPanel) comp).getComponents()) {
                     if (button instanceof JButton) {
                         JButton jButton = (JButton) button;
-                        if (jButton.getText().matches("[+\\-×÷]")) {
+                        if (jButton.getText().equals("←")) {
+                            jButton.setBackground(backspaceBackground);
+                            jButton.setForeground(backspaceForeground);
+                        } else if (jButton.getText().matches("[+\\-×÷]")) {
                             jButton.setBackground(operatorBackground);
                             jButton.setForeground(operatorForeground);
                         } else if (jButton.getText().equals("=")) {
