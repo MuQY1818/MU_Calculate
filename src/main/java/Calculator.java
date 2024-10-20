@@ -112,7 +112,7 @@ public class Calculator extends JFrame {
         display.setText(placeholder); // 初始时显示提示词
         currentTextColor = LIGHT_TEXT_COLOR;
         display.setForeground(currentTextColor.brighter());
-        // 设置边框样式
+        // 设边框样式
         display.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(new Color(200, 200, 200), 1),
                 BorderFactory.createEmptyBorder(15, 15, 15, 15)
@@ -153,7 +153,7 @@ public class Calculator extends JFrame {
                 "4", "5", "6", "×",
                 "1", "2", "3", "-",
                 "(", "0", ")", "+",
-                "√", "%", "1/x", "C"
+                ".", "%", "1/x", "C"
         };
 
         // 添加基本按钮
@@ -327,7 +327,7 @@ public class Calculator extends JFrame {
             button.setBackground(OPERATOR_BACKGROUND);
             button.setFont(new Font("Segoe UI", Font.BOLD, 22));
             button.setForeground(Color.WHITE);
-        } else if (text.matches("[√%1/x]")) {
+        } else if (text.matches("[%1/x]")) {  // 移除了 √
             button.setBackground(SPECIAL_BUTTON_BACKGROUND);
         } else if (text.equals("=")) {
             button.setBackground(EQUALS_BUTTON_BACKGROUND);
@@ -440,11 +440,15 @@ public class Calculator extends JFrame {
                 handleAdvancedFunction(command);
             }
 
-            // 处理数字和运算符，直接加到算式中即可
-            else if (!e.getSource().equals(historyButton)) {  // 使用对象比较而不是文本比较
+            // 处理数字、小数点和运算符，直接加到算式中即可
+            else if (!e.getSource().equals(historyButton)) {
                 if (display.getText().equals(placeholder)) {
                     display.setText("");
                     display.setForeground(Color.BLACK);
+                }
+                // 检查是否已经有小数点
+                if (command.equals(".") && display.getText().contains(".")) {
+                    return; // 如果已经有小数点，就不再添加
                 }
                 display.setText(display.getText() + command);
             }
@@ -512,7 +516,7 @@ public class Calculator extends JFrame {
                     }
                     if (c == '-' && lastWasOperator) {
                         numberBuilder.append(c);
-                    } else if ("+-*/^()".indexOf(c) != -1) {
+                    } else if ("+-*/%^()".indexOf(c) != -1) {  // 添加 '%' 到这里
                         if (c == '(') {
                             ops.push(String.valueOf(c));
                         } else if (c == ')') {
@@ -539,9 +543,19 @@ public class Calculator extends JFrame {
                 values.push(applyOp(ops.pop(), values.pop(), values.pop()));
             }
 
-            return String.valueOf(values.pop());
+            double result = values.pop();
+            if (Double.isInfinite(result) || Double.isNaN(result)) {
+                return "Error: Division by zero";
+            }
+            
+            // 格式化结果
+            if (result == (long) result) {
+                return String.format("%d", (long) result);
+            } else {
+                return String.valueOf(result);
+            }
         } catch (Exception e) {
-            return "错误: " + e.getMessage();
+            return "Error: " + e.getMessage();
         }
     }
 
@@ -560,7 +574,8 @@ public class Calculator extends JFrame {
 
     private boolean hasPrecedence(String op1, String op2) {
         if (op2.equals("(") || op2.equals(")")) return false;
-        if ((op1.equals("*") || op1.equals("/")) && (op2.equals("+") || op2.equals("-"))) return false;
+        if ((op1.equals("*") || op1.equals("/") || op1.equals("%")) && 
+            (op2.equals("+") || op2.equals("-"))) return false;
         if (op1.equals("^") && !op2.equals("^")) return false;
         return true;
     }
@@ -570,7 +585,16 @@ public class Calculator extends JFrame {
             case "+": return a + b;
             case "-": return a - b;
             case "*": return a * b;
-            case "/": return a / b;
+            case "/":
+                if (b == 0) {
+                    throw new ArithmeticException("Division by zero");
+                }
+                return a / b;
+            case "%":
+                if (b == 0) {
+                    throw new ArithmeticException("Modulo by zero");
+                }
+                return a % b;
             case "^": return Math.pow(a, b);
         }
         return 0;
@@ -681,7 +705,7 @@ public class Calculator extends JFrame {
                         } else if (jButton.getText().equals("=")) {
                             jButton.setBackground(equalsButtonBackground);
                             jButton.setForeground(equalsForeground);
-                        } else if (jButton.getText().matches("[√%1/x]")) {
+                        } else if (jButton.getText().matches("[%1/x]")) {
                             jButton.setBackground(specialButtonBackground);
                             jButton.setForeground(currentTextColor);
                         } else if (jButton.getText().matches("sin θ|cos θ|tan θ|ln x|log x|eˣ|xʸ")) {
