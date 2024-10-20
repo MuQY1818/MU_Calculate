@@ -1,3 +1,4 @@
+// 导入所需的Java类库
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -17,16 +18,17 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 
-
+// 计算器用户界面类
 public class CalculatorUI {
-    private Calculator calculator;
-    private CalculatorLogic logic;
-    private HistoryManager historyManager;
-    private ThemeManager themeManager;
-    private JTextField display;
-    private JPanel buttonPanel;
-    private final String placeholder = "Enter calculation here...";
+    private Calculator calculator;         // 计算器主类引用
+    private CalculatorLogic logic;         // 计算器逻辑类引用
+    private HistoryManager historyManager; // 历史记录管理器引用
+    private ThemeManager themeManager;     // 主题管理器引用
+    private JTextField display;            // 显示屏文本框
+    private JPanel buttonPanel;            // 按钮面板
+    private final String placeholder = "Enter calculation here..."; // 占位符文本
 
+    // 构造函数
     public CalculatorUI(Calculator calculator, CalculatorLogic logic, HistoryManager historyManager, ThemeManager themeManager) {
         this.calculator = calculator;
         this.logic = logic;
@@ -35,6 +37,7 @@ public class CalculatorUI {
         initComponents();
     }
 
+    // 初始化组件
     private void initComponents() {
         createDisplay();
         createButtonPanel();
@@ -48,6 +51,7 @@ public class CalculatorUI {
         });
     }
 
+    // 创建显示屏
     private void createDisplay() {
         display = new JTextField();
         display.setEditable(true);
@@ -61,6 +65,7 @@ public class CalculatorUI {
         addDisplayListeners();
     }
 
+    // 添加显示屏监听器
     private void addDisplayListeners() {
         display.addFocusListener(new java.awt.event.FocusAdapter() {
             @Override
@@ -81,6 +86,7 @@ public class CalculatorUI {
         });
     }
 
+    // 创建按钮面板
     private void createButtonPanel() {
         buttonPanel = new JPanel(new GridBagLayout());
         buttonPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10)); // 添加边缘空间
@@ -90,6 +96,7 @@ public class CalculatorUI {
         gbc.weightx = 1.0;
         gbc.weighty = 1.0;
 
+        // 定义按钮文本数组
         String[] buttons = {
                 "7", "8", "9", "÷",
                 "4", "5", "6", "×",
@@ -101,6 +108,7 @@ public class CalculatorUI {
                 "=", "Hist"
         };
 
+        // 创建并添加按钮到面板
         for (int i = 0; i < buttons.length; i++) {
             JButton button = createStyledButton(buttons[i]);
             if (i == buttons.length - 2) {  // "=" 按钮
@@ -120,6 +128,7 @@ public class CalculatorUI {
         }
     }
 
+    // 创建样式化按钮
     private JButton createStyledButton(String text) {
         JButton button = new JButton(text);
         button.setFont(new Font("Segoe UI", Font.PLAIN, 22)); 
@@ -132,6 +141,7 @@ public class CalculatorUI {
         return button;
     }
 
+    // 创建按钮监听器
     private ActionListener createButtonListener(String buttonText) {
         return e -> {
             if (!display.isFocusable()) {
@@ -143,6 +153,7 @@ public class CalculatorUI {
                 currentText = "";
             }
 
+            // 根据按钮文本执行相应操作
             switch (buttonText) {
                 case "=":
                     String result = logic.evaluateExpression(currentText);
@@ -176,6 +187,7 @@ public class CalculatorUI {
         };
     }
 
+    // 处理高级函数
     private void handleAdvancedFunction(String function) {
         try {
             double value = Double.parseDouble(display.getText());
@@ -188,6 +200,7 @@ public class CalculatorUI {
         }
     }
 
+    // 创建菜单栏
     public JMenuBar createMenuBar() {
         JMenuBar menuBar = new JMenuBar();
         JMenu settingsMenu = new JMenu("设置");
@@ -214,6 +227,7 @@ public class CalculatorUI {
         return menuBar;
     }
 
+    // 打开贷款计算器
     private void openLoanCalculator() {
         SwingUtilities.invokeLater(() -> {
             LoanCalculator loanCalculator = new LoanCalculator();
@@ -221,10 +235,12 @@ public class CalculatorUI {
         });
     }
 
+    // 获取显示屏
     public JTextField getDisplay() {
         return display;
     }
 
+    // 获取显示面板
     public JPanel getDisplayPanel() {
         JPanel panel = new JPanel(new BorderLayout());
         panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 5, 10)); // 添加边缘空间
@@ -232,6 +248,7 @@ public class CalculatorUI {
         return panel;
     }
 
+    // 获取按钮面板
     public JPanel getButtonPanel() {
         return buttonPanel;
     }

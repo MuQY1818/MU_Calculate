@@ -1,3 +1,4 @@
+// 导入所需的Java类库
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
@@ -10,11 +11,12 @@ import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
+// 主题管理器类
 public class ThemeManager {
-    private Calculator calculator;
-    private boolean isDarkTheme;
+    private Calculator calculator;  // 计算器实例
+    private boolean isDarkTheme;    // 是否为深色主题
 
-    // 浅色主题颜色
+    // 浅色主题颜色定义
     private static final Color LIGHT_BACKGROUND_COLOR = new Color(240, 240, 240);
     private static final Color LIGHT_DISPLAY_BACKGROUND = new Color(255, 255, 255);
     private static final Color LIGHT_BUTTON_BACKGROUND = new Color(250, 250, 250);
@@ -28,7 +30,7 @@ public class ThemeManager {
     private static final Color LIGHT_BACKSPACE_BACKGROUND = new Color(255, 200, 200);
     private static final Color LIGHT_BACKSPACE_FOREGROUND = new Color(139, 0, 0);
 
-    // 深色主题颜色
+    // 深色主题颜色定义
     private static final Color DARK_BACKGROUND_COLOR = new Color(50, 50, 50);
     private static final Color DARK_DISPLAY_BACKGROUND = new Color(70, 70, 70);
     private static final Color DARK_BUTTON_BACKGROUND = new Color(80, 80, 80);
@@ -39,25 +41,29 @@ public class ThemeManager {
     private static final Color DARK_TEXT_COLOR = new Color(255, 255, 255);
     private static final Color DARK_SCIENTIFIC_BUTTON_BACKGROUND = new Color(100, 100, 200);
     private static final Color DARK_SCIENTIFIC_BUTTON_FOREGROUND = new Color(220, 220, 255);
-    private static final Color DARK_BACKSPACE_BACKGROUND = new Color(180, 60, 60); // 更浅的红色
-    private static final Color DARK_BACKSPACE_FOREGROUND = new Color(255, 220, 220); // 更浅的文字颜色
+    private static final Color DARK_BACKSPACE_BACKGROUND = new Color(180, 60, 60);
+    private static final Color DARK_BACKSPACE_FOREGROUND = new Color(255, 220, 220);
 
+    // 构造函数
     public ThemeManager(Calculator calculator) {
         this.calculator = calculator;
-        this.isDarkTheme = false;
+        this.isDarkTheme = false;  // 默认使用浅色主题
     }
 
+    // 设置主题
     public void setTheme(boolean isDark) {
         isDarkTheme = isDark;
         updateTheme();
     }
 
+    // 更新主题
     public void updateTheme() {
         updateComponentColors(calculator.getContentPane());
         updateMenuBarColors(calculator.getJMenuBar());
         calculator.updateUI();
     }
 
+    // 更新组件颜色
     private void updateComponentColors(Container container) {
         for (Component comp : container.getComponents()) {
             if (comp instanceof JPanel) {
@@ -74,6 +80,7 @@ public class ThemeManager {
         }
     }
 
+    // 更新菜单栏颜色
     private void updateMenuBarColors(JMenuBar menuBar) {
         if (menuBar != null) {
             menuBar.setBackground(getBackgroundColor());
@@ -84,6 +91,7 @@ public class ThemeManager {
         }
     }
 
+    // 更新菜单颜色
     private void updateMenuColors(JMenu menu) {
         menu.setBackground(getBackgroundColor());
         for (int i = 0; i < menu.getItemCount(); i++) {
@@ -94,6 +102,7 @@ public class ThemeManager {
         }
     }
 
+    // 设置按钮样式
     public void styleButton(JButton button, String text) {
         if (text.equals("←")) {
             button.setBackground(getBackspaceBackgroundColor());
@@ -120,50 +129,62 @@ public class ThemeManager {
         }
     }
 
+    // 获取背景颜色
     public Color getBackgroundColor() {
         return isDarkTheme ? DARK_BACKGROUND_COLOR : LIGHT_BACKGROUND_COLOR;
     }
 
+    // 获取显示背景颜色
     public Color getDisplayBackgroundColor() {
         return isDarkTheme ? DARK_DISPLAY_BACKGROUND : LIGHT_DISPLAY_BACKGROUND;
     }
 
+    // 获取按钮背景颜色
     public Color getButtonBackgroundColor() {
         return isDarkTheme ? DARK_BUTTON_BACKGROUND : LIGHT_BUTTON_BACKGROUND;
     }
 
+    // 获取当前文本颜色
     public Color getCurrentTextColor() {
         return isDarkTheme ? DARK_TEXT_COLOR : LIGHT_TEXT_COLOR;
     }
 
+    // 获取运算符按钮背景颜色
     public Color getOperatorBackgroundColor() {
         return isDarkTheme ? DARK_OPERATOR_BACKGROUND : LIGHT_OPERATOR_BACKGROUND;
     }
 
+    // 获取特殊按钮背景颜色
     public Color getSpecialButtonBackgroundColor() {
         return isDarkTheme ? DARK_SPECIAL_BUTTON_BACKGROUND : LIGHT_SPECIAL_BUTTON_BACKGROUND;
     }
 
+    // 获取等号按钮背景颜色
     public Color getEqualsButtonBackgroundColor() {
         return isDarkTheme ? DARK_EQUALS_BUTTON_BACKGROUND : LIGHT_EQUALS_BUTTON_BACKGROUND;
     }
 
+    // 获取科学计算按钮背景颜色
     public Color getScientificButtonBackgroundColor() {
         return isDarkTheme ? DARK_SCIENTIFIC_BUTTON_BACKGROUND : LIGHT_SCIENTIFIC_BUTTON_BACKGROUND;
     }
 
+    // 获取科学计算按钮前景颜色
     public Color getScientificButtonForegroundColor() {
         return isDarkTheme ? DARK_SCIENTIFIC_BUTTON_FOREGROUND : LIGHT_SCIENTIFIC_BUTTON_FOREGROUND;
     }
 
+    // 获取退格按钮背景颜色
     public Color getBackspaceBackgroundColor() {
         return isDarkTheme ? DARK_BACKSPACE_BACKGROUND : LIGHT_BACKSPACE_BACKGROUND;
     }
 
+    // 获取退格按钮前景颜色
     public Color getBackspaceForegroundColor() {
         return isDarkTheme ? DARK_BACKSPACE_FOREGROUND : LIGHT_BACKSPACE_FOREGROUND;
     }
 
+    // 获取占位符颜色
     public Color getPlaceholderColor() {
         return isDarkTheme ? DARK_TEXT_COLOR.darker() : LIGHT_TEXT_COLOR.brighter();
     }
