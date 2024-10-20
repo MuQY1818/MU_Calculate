@@ -13,14 +13,14 @@ import javax.swing.JTextField;
 
 // 主题管理器类
 public class ThemeManager {
-    private Calculator calculator;  // 计算器实例
+    private final Calculator calculator;  // 计算器实例
+    private CalculatorUI calculatorUI;  // 添加 CalculatorUI 字段
     private boolean isDarkTheme;    // 是否为深色主题
 
     // 浅色主题颜色定义
     private static final Color LIGHT_BACKGROUND_COLOR = new Color(240, 240, 240);
     private static final Color LIGHT_DISPLAY_BACKGROUND = new Color(255, 255, 255);
     private static final Color LIGHT_BUTTON_BACKGROUND = new Color(250, 250, 250);
-    private static final Color LIGHT_BUTTON_FOREGROUND = new Color(50, 50, 50);
     private static final Color LIGHT_OPERATOR_BACKGROUND = new Color(255, 149, 0);
     private static final Color LIGHT_SPECIAL_BUTTON_BACKGROUND = new Color(230, 230, 230);
     private static final Color LIGHT_EQUALS_BUTTON_BACKGROUND = new Color(0, 122, 255);
@@ -34,7 +34,6 @@ public class ThemeManager {
     private static final Color DARK_BACKGROUND_COLOR = new Color(50, 50, 50);
     private static final Color DARK_DISPLAY_BACKGROUND = new Color(70, 70, 70);
     private static final Color DARK_BUTTON_BACKGROUND = new Color(80, 80, 80);
-    private static final Color DARK_BUTTON_FOREGROUND = new Color(255, 255, 255);
     private static final Color DARK_OPERATOR_BACKGROUND = new Color(255, 149, 0);
     private static final Color DARK_SPECIAL_BUTTON_BACKGROUND = new Color(100, 100, 100);
     private static final Color DARK_EQUALS_BUTTON_BACKGROUND = new Color(0, 122, 255);
@@ -60,6 +59,7 @@ public class ThemeManager {
     public void updateTheme() {
         updateComponentColors(calculator.getContentPane());
         updateMenuBarColors(calculator.getJMenuBar());
+        updatePlaceholderColor();
         calculator.updateUI();
     }
 
@@ -187,5 +187,33 @@ public class ThemeManager {
     // 获取占位符颜色
     public Color getPlaceholderColor() {
         return isDarkTheme ? DARK_TEXT_COLOR.darker() : LIGHT_TEXT_COLOR.brighter();
+    }
+
+    // 初始化占位符颜色
+    private void initializePlaceholderColor() {
+        JTextField display = calculatorUI.getDisplay();
+        if (display != null && isDisplayShowingPlaceholder(display)) {
+            display.setForeground(getPlaceholderColor());
+        }
+    }
+
+    // 更新占位符颜色
+    private void updatePlaceholderColor() {
+        JTextField display = calculatorUI.getDisplay();
+        if (display != null && isDisplayShowingPlaceholder(display)) {
+            display.setForeground(getPlaceholderColor());
+        } else {
+            display.setForeground(getCurrentTextColor());
+        }
+    }
+
+    // 检查显示屏是否显示占位符
+    private boolean isDisplayShowingPlaceholder(JTextField display) {
+        return display.getText().equals(calculatorUI.getPlaceholder());
+    }
+
+    public void setCalculatorUI(CalculatorUI calculatorUI) {
+        this.calculatorUI = calculatorUI;
+        initializePlaceholderColor();
     }
 }

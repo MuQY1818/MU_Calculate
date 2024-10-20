@@ -35,6 +35,7 @@ public class CalculatorUI {
         this.historyManager = historyManager;
         this.themeManager = themeManager;
         initComponents();
+        themeManager.setCalculatorUI(this);
     }
 
     // 初始化组件
@@ -251,5 +252,15 @@ public class CalculatorUI {
     // 获取按钮面板
     public JPanel getButtonPanel() {
         return buttonPanel;
+    }
+
+    // 添加这个方法
+    public void setThemeManager(ThemeManager themeManager) {
+        this.themeManager = themeManager;
+        initComponents(); // 在这里调用 initComponents()
+    }
+
+    public String getPlaceholder() {
+        return placeholder;
     }
 }

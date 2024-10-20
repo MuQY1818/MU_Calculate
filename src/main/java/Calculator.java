@@ -4,15 +4,16 @@ import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
 
 /**
  * 计算器主类，继承自JFrame
  */
 public class Calculator extends JFrame {
-    private CalculatorUI ui;           // 计算器用户界面
-    private CalculatorLogic logic;     // 计算器逻辑
-    private ThemeManager themeManager; // 主题管理器
-    private HistoryManager historyManager; // 历史记录管理器
+    private final CalculatorUI ui;           // 计算器用户界面
+    private final CalculatorLogic logic;     // 计算器逻辑
+    private final ThemeManager themeManager; // 主题管理器
+    private final HistoryManager historyManager; // 历史记录管理器
 
     /**
      * 构造函数，初始化计算器
@@ -32,18 +33,12 @@ public class Calculator extends JFrame {
         themeManager = new ThemeManager(this);
         ui = new CalculatorUI(this, logic, historyManager, themeManager);
 
-        initComponents();
-        setSize(400, 600);
-        themeManager.updateTheme(); // 初始化主题
-    }
-
-    /**
-     * 初始化界面组件
-     */
-    private void initComponents() {
         add(ui.getDisplayPanel(), BorderLayout.NORTH);
         add(ui.getButtonPanel(), BorderLayout.CENTER);
         setJMenuBar(ui.createMenuBar());
+
+        setSize(400, 600);
+        themeManager.updateTheme(); // 初始化主题
     }
 
     /**
@@ -61,8 +56,14 @@ public class Calculator extends JFrame {
             try {
                 // 设置Nimbus外观
                 UIManager.setLookAndFeel("javax.swing.plaf.nimbus.NimbusLookAndFeel");
-            } catch (Exception e) {
-                e.printStackTrace();
+            } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException e) {
+                try {
+                    // 如果Nimbus不可用，尝试使用系统默认外观
+                    UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+                } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex) {
+                    // 如果设置外观失败，记录错误但继续执行
+                    System.err.println("无法设置外观: " + ex.getMessage());
+                }
             }
             Calculator calculator = new Calculator();
             calculator.setVisible(true);
